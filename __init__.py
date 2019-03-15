@@ -159,6 +159,9 @@ class FBXGEE_PT_panel(Panel):
                     obj_row.alert = True
 
                 obj_row.prop(obj, "name", text="", icon=type_icon)
+
+                if obj.name == active_object.name:
+                    obj_row.label(icon='LAYER_ACTIVE')
         elif export_mode == 'COLLECTION':
             for obj in active_collection.objects:
                 obj_row = obj_col.row(align=True)
