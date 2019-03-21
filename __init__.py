@@ -26,7 +26,7 @@ import bpy
 from bpy.app.handlers import persistent
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator, Panel
-from bpy.utils import register_classes_factory
+from bpy.utils import register_class, unregister_class
 
 from .icons import *
 
@@ -406,41 +406,7 @@ def update_recent_folder(self, context):
             active_collection.FBXGEE_dir_path = new_dir_path
 
 
-engines = [
-    ("UNITY", "Unity", "", icon_get('unity'), 1),
-    ("UE4", "Unreal Engine 4", "", icon_get('ue4'), 2),
-]
-
-
-export_modes = [
-    ("OBJECT", "Object", "", 1),
-    ("COLLECTION", "Collection", "", 2),
-]
-
-
 recent_folders = []
-
-
-bpy.types.Scene.FBXGEE_engine = EnumProperty(
-    name="Game Engine", items=engines)
-bpy.types.WindowManager.FBXGEE_export_mode = EnumProperty(
-    name="Export Mode", items=export_modes)
-bpy.types.WindowManager.FBXGEE_recent_folders = EnumProperty(
-    name="Recent Folders",
-    items=get_recent_folders,
-    update=update_recent_folder)
-bpy.types.Object.FBXGEE_dir_path = StringProperty(
-    name="Export Directory",
-    default="",
-    subtype='DIR_PATH',
-    update=update_dir_path,
-    get=get_dir_path, set=set_dir_path)
-bpy.types.Collection.FBXGEE_dir_path = StringProperty(
-    name="Collection Export Directory",
-    default="",
-    subtype='DIR_PATH',
-    update=update_dir_path,
-    get=get_dir_path, set=set_dir_path)
 
 
 classes = (
@@ -450,8 +416,6 @@ classes = (
     FBXGEE_OT_sync_dir_path,
     FBXGEE_OT_export_linked_data,
 )
-
-register, unregister = register_classes_factory(classes)
 
 
 @persistent
@@ -482,7 +446,53 @@ def collect_recent_folders(dummy):
         recent_folders.append(recent_folder)
 
 
-bpy.app.handlers.load_post.append(collect_recent_folders)
+def register():
+    register_icons()
+
+    engines = [
+        ("UNITY", "Unity", "", icon_get('unity'), 1),
+        ("UE4", "Unreal Engine 4", "", icon_get('ue4'), 2),
+    ]
+
+    bpy.types.Scene.FBXGEE_engine = EnumProperty(
+        name="Game Engine", items=engines)
+
+    export_modes = [
+        ("OBJECT", "Object", "", 1),
+        ("COLLECTION", "Collection", "", 2),
+    ]
+
+    bpy.types.WindowManager.FBXGEE_export_mode = EnumProperty(
+        name="Export Mode", items=export_modes)
+    bpy.types.WindowManager.FBXGEE_recent_folders = EnumProperty(
+        name="Recent Folders",
+        items=get_recent_folders,
+        update=update_recent_folder)
+    bpy.types.Object.FBXGEE_dir_path = StringProperty(
+        name="Export Directory",
+        default="",
+        subtype='DIR_PATH',
+        update=update_dir_path,
+        get=get_dir_path, set=set_dir_path)
+    bpy.types.Collection.FBXGEE_dir_path = StringProperty(
+        name="Collection Export Directory",
+        default="",
+        subtype='DIR_PATH',
+        update=update_dir_path,
+        get=get_dir_path, set=set_dir_path)
+
+    for cls in classes:
+        register_class(cls)
+
+    bpy.app.handlers.load_post.append(collect_recent_folders)
+
+
+def unregister():
+    for cls in classes:
+        unregister_class(cls)
+
+    bpy.app.handlers.load_post.remove(collect_recent_folders)
+    unregister_icons()
 
 
 if __name__ == "__main__":
