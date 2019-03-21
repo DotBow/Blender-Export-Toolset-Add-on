@@ -29,7 +29,7 @@ from bpy.types import Panel
 from bpy.utils import register_class, unregister_class
 
 from .icons import *
-from operators import *
+from .operators import *
 
 bl_info = {
     "name": "FBX Game Engine Export",

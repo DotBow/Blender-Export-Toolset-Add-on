@@ -22,7 +22,7 @@
 import bpy
 from bpy.props import EnumProperty
 from bpy.types import Operator
-from fbx_presets import fbx_export
+from .fbx_presets import fbx_export
 
 
 class FBXGEE_OT_export_single(Operator):
