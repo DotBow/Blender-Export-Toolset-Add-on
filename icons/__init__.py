@@ -1,5 +1,5 @@
 import bpy
-import bpy.utils.previews
+import glob
 import os
 
 
@@ -15,10 +15,5 @@ def icon_register(name):
     preview_icons.load(name, os.path.join(icons_dir, name + ".png"), 'IMAGE')
 
 
-icons = [
-    "unity",
-    "ue4"
-]
-
-for icon in icons:
+for icon in glob.glob("*.png"):
     icon_register(icon)
