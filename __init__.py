@@ -28,6 +28,8 @@ from bpy.props import BoolProperty, EnumProperty, StringProperty
 from bpy.types import Operator, Panel
 from bpy.utils import register_classes_factory
 
+from .icons import *
+
 bl_info = {
     "name": "FBX Game Engine Export",
     "description": "FBX format export for Unity and Unreal Engine 4",
@@ -405,8 +407,8 @@ def update_recent_folder(self, context):
 
 
 engines = [
-    ("UNITY", "Unity", "", 1),
-    ("UE4", "Unreal Engine 4", "", 2),
+    ("UNITY", "Unity", "", icon_get('unity'), 1),
+    ("UE4", "Unreal Engine 4", "", icon_get('ue4'), 2),
 ]
 
 
