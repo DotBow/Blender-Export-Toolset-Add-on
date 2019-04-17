@@ -19,9 +19,12 @@
 # <pep8 compliant>
 
 
+from os import path
+
 import bpy
 from bpy.props import EnumProperty
 from bpy.types import Operator
+
 from .fbx_presets import fbx_export
 
 
@@ -53,11 +56,15 @@ class FBXGEE_OT_export_single(Operator):
         file_name = active_object.name if export_mode == 'OBJECT' else context.collection.name
         dir_path = active_object.FBXGEE_dir_path if export_mode == 'OBJECT' else context.collection.FBXGEE_dir_path
 
-        result = fbx_export(
-            engine, self.export_type, dir_path, file_name)
+        if path.exists(dir_path):
+            result = fbx_export(
+                engine, self.export_type, dir_path, file_name)
 
-        self.report({'INFO'}, result)
-        return {'FINISHED'}
+            self.report({'INFO'}, result)
+            return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, "Export Path Doesn't Exist!")
+            return {'FINISHED'}
 
 
 class FBXGEE_OT_export_batch(Operator):
@@ -94,10 +101,13 @@ class FBXGEE_OT_export_batch(Operator):
             obj.select_set(True)
             dir_path = obj.FBXGEE_dir_path
 
-            result = fbx_export(
-                engine, self.export_type, dir_path, obj.name)
+            if path.exists(dir_path):
+                result = fbx_export(
+                    engine, self.export_type, dir_path, obj.name)
 
-            self.report({'INFO'}, result)
+                self.report({'INFO'}, result)
+            else:
+                self.report({'ERROR'}, "Export Path Doesn't Exist!")
 
         for obj in selected_objects:
             obj.select_set(True)
@@ -125,6 +135,7 @@ class FBXGEE_OT_sync_dir_path(Operator):
         return {'FINISHED'}
 
 
+# TODO Use JSON format
 class FBXGEE_OT_export_linked_data(Operator):
     """ Export transformation data for each linked object into text file """
     bl_idname = "object.fbxgee_ot_export_linked_data"
