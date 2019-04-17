@@ -19,6 +19,7 @@
 # <pep8 compliant>
 
 
+import json
 from os import path
 
 import bpy
@@ -135,7 +136,6 @@ class FBXGEE_OT_sync_dir_path(Operator):
         return {'FINISHED'}
 
 
-# TODO Use JSON format
 class FBXGEE_OT_export_linked_data(Operator):
     """ Export transformation data for each linked object into text file """
     bl_idname = "object.fbxgee_ot_export_linked_data"
@@ -151,17 +151,28 @@ class FBXGEE_OT_export_linked_data(Operator):
         bpy.ops.object.select_linked(type='OBDATA')
 
         active_object = context.active_object
-        path = active_object.FBXGEE_dir_path
+        name = active_object.name.rsplit('.', 1)[0]
+        file_path = path.join(active_object.FBXGEE_dir_path,
+                              name + ".txt")
 
         # Clear file
-        open(path + active_object.name + ".txt", 'w').close()
+        open(file_path, 'w').close()
 
-        for obj in context.selected_objects:
-            loc = obj.location
-            rot = obj.rotation_euler
+        with open(file_path, 'a') as file:
+            data = {name: []}
 
-            with open(path + active_object.name + ".txt", 'a') as file:
-                file.write("{0:.2f} {1:.2f} {2:.2f} {3:.2f} {4:.2f} {5:.2f}\n"
-                           .format(loc.x, loc.y, loc.z, rot.x, rot.y, rot.z))
+            for obj in context.selected_objects:
+                loc = obj.location
+                rot = obj.rotation_euler
+                size = obj.dimensions
+
+                obj_data = {obj.name: {
+                    "location": {"x": loc.x, "y": loc.y, "z": loc.z},
+                    "rotation": {"x": rot.x, "y": rot.y, "z": rot.z},
+                    "size": {"x": size.x, "y": size.y, "z": size.z}}}
+
+                data[name].append(obj_data)
+
+            file.write(json.dumps(data, indent=4) + '\n')
 
         return {'FINISHED'}
