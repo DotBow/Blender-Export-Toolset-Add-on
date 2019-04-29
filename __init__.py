@@ -128,6 +128,10 @@ class FBXGEE_PT_panel(Panel):
                                         text="Export Batch Skeletal",
                                         icon='EXPORT').export_type = 'SKELETAL'
             export_buttons_col.separator()
+            export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
+                                        text="Export Animation",
+                                        icon='EXPORT').export_type = 'ANIMATION'
+            export_buttons_col.separator()
             export_buttons_col.operator(
                 FBXGEE_OT_export_linked_data.bl_idname, icon='EXPORT')
         elif export_mode == 'COLLECTION':

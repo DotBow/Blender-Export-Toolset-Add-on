@@ -45,9 +45,8 @@ def fbx_export(engine, export_type, dir_path, file_name):
             return "Export Finished"
         # UNITY Skeletal Mesh
         elif export_type == "SKELETAL":
-            # bpy.ops.export_scene.fbx(
-            #     filepath=export_path,)
-
+            return "Not supported yet"
+        elif export_type == "ANIMATION":
             return "Not supported yet"
     elif engine == "UE4":
         # UE4 Static Mesh
@@ -73,5 +72,16 @@ def fbx_export(engine, export_type, dir_path, file_name):
                 mesh_smooth_type='FACE',
                 add_leaf_bones=False,
                 bake_anim=False)
+
+            return "Export Finished"
+         # UE4 Animation
+        elif export_type == "ANIMATION":
+            bpy.ops.export_scene.fbx(
+                filepath=export_path,
+                use_selection=selection,
+                axis_up='Z',
+                object_types={'ARMATURE', 'MESH', 'OTHER'},
+                mesh_smooth_type='FACE',
+                add_leaf_bones=False)
 
             return "Export Finished"

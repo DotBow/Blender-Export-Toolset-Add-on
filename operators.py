@@ -37,6 +37,7 @@ class FBXGEE_OT_export_single(Operator):
     export_type_items = [
         ("STATIC", "Static Mesh", "", 1),
         ("SKELETAL", "Skeletal Mesh", "", 2),
+        ("ANIMATION", "Animation", "", 3),
     ]
 
     export_type: EnumProperty(items=export_type_items)
@@ -137,7 +138,7 @@ class FBXGEE_OT_sync_dir_path(Operator):
 
 
 class FBXGEE_OT_export_linked_data(Operator):
-    """ Export transformation data for each linked object into text file """
+    """ Export transformation data for each linked object into JSON file """
     bl_idname = "object.fbxgee_ot_export_linked_data"
     bl_label = "Export Linked Data"
 
@@ -153,13 +154,13 @@ class FBXGEE_OT_export_linked_data(Operator):
         active_object = context.active_object
         name = active_object.name.rsplit('.', 1)[0]
         file_path = path.join(active_object.FBXGEE_dir_path,
-                              name + ".txt")
+                              name + ".json")
 
         # Clear file
         open(file_path, 'w').close()
 
         with open(file_path, 'a') as file:
-            data = {name: []}
+            data = {"Linked Transform Data": []}
 
             for obj in context.selected_objects:
                 loc = obj.location
@@ -171,7 +172,7 @@ class FBXGEE_OT_export_linked_data(Operator):
                     "rotation": {"x": rot.x, "y": rot.y, "z": rot.z},
                     "size": {"x": size.x, "y": size.y, "z": size.z}}}
 
-                data[name].append(obj_data)
+                data["Linked Transform Data"].append(obj_data)
 
             file.write(json.dumps(data, indent=4) + '\n')
 
