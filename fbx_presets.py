@@ -74,7 +74,7 @@ def fbx_export(engine, export_type, dir_path, file_name):
                 bake_anim=False)
 
             return "Export Finished"
-         # UE4 Animation
+        # UE4 Animation
         elif export_type == "ANIMATION":
             bpy.ops.export_scene.fbx(
                 filepath=export_path,
@@ -82,6 +82,7 @@ def fbx_export(engine, export_type, dir_path, file_name):
                 axis_up='Z',
                 object_types={'ARMATURE', 'MESH', 'OTHER'},
                 mesh_smooth_type='FACE',
-                add_leaf_bones=False)
+                add_leaf_bones=False,
+                bake_anim_simplify_factor=0)
 
             return "Export Finished"
