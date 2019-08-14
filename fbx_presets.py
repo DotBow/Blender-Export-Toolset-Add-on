@@ -86,3 +86,19 @@ def fbx_export(engine, export_type, dir_path, file_name):
                 bake_anim_simplify_factor=0)
 
             return "Export Finished"
+    elif engine == "MAYA":
+        # MAYA Static Mesh
+        if export_type == "STATIC":
+            bpy.ops.export_scene.fbx(
+                filepath=export_path,
+                use_selection=selection,
+                use_active_collection=use_collection,
+                object_types={'MESH', 'OTHER'},
+                bake_anim=False)
+
+            return "Export Finished"
+        # MAYA Skeletal Mesh
+        elif export_type == "SKELETAL":
+            return "Not supported yet"
+        elif export_type == "ANIMATION":
+            return "Not supported yet"

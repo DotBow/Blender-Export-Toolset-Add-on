@@ -273,6 +273,7 @@ def register():
     engines = [
         ("UNITY", "Unity", "", icon_get('unity'), 1),
         ("UE4", "Unreal Engine 4", "", icon_get('ue4'), 2),
+        ("MAYA", "Maya", "", icon_get('maya'), 3),
     ]
 
     bpy.types.Scene.FBXGEE_engine = EnumProperty(
