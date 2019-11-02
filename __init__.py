@@ -73,6 +73,12 @@ class FBXGEE_PT_panel(Panel):
             layout.separator()
             return
 
+        settings_box = layout.box()
+        settings_box.label(text="Settings:")
+        settings_box_col = settings_box.column(align=True)
+        settings_box_col.prop(scene, "FBXGEE_reset_pos")
+        settings_box_col.prop(scene, "FBXGEE_reset_rot")
+
         # Active Export Directory
         export_dir_box = layout.box()
         export_dir_box.label(text="Export Folder:")
@@ -302,6 +308,12 @@ def register():
         subtype='DIR_PATH',
         update=update_dir_path,
         get=get_dir_path, set=set_dir_path)
+
+    bpy.types.Scene.FBXGEE_reset_pos = BoolProperty(
+        name="Reset Position", description="Set object position to (0, 0, 0)", default=False)
+
+    bpy.types.Scene.FBXGEE_reset_rot = BoolProperty(
+        name="Reset Rotation", description="Set object rotation to (0, 0, 0)", default=False)
 
     for cls in classes:
         register_class(cls)

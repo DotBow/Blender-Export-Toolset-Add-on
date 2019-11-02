@@ -59,8 +59,32 @@ class FBXGEE_OT_export_single(Operator):
         dir_path = active_object.FBXGEE_dir_path if export_mode == 'OBJECT' else context.collection.FBXGEE_dir_path
 
         if path.exists(dir_path):
+            scene = context.scene
+
+            if scene.FBXGEE_reset_pos is True:
+                bpy.ops.view3d.snap_cursor_to_selected()
+                c_loс = scene.cursor.location.copy()
+                bpy.ops.view3d.snap_cursor_to_center()
+                bpy.ops.view3d.snap_selected_to_cursor(use_offset=True)
+
+            if scene.FBXGEE_reset_rot is True:
+                rots = []
+                for ob in context.selected_objects:
+                    rots.append(ob.rotation_euler.copy())
+                    ob.rotation_euler.zero()
+
             result = fbx_export(
                 engine, self.export_type, dir_path, file_name)
+
+            if scene.FBXGEE_reset_pos is True:
+                scene.cursor.location = c_loс
+                bpy.ops.view3d.snap_selected_to_cursor(use_offset=True)
+
+            if scene.FBXGEE_reset_rot is True:
+                i = 0
+                for ob in context.selected_objects:
+                    ob.rotation_euler = rots[i]
+                    i = i + 1
 
             self.report({'INFO'}, result)
             return {'FINISHED'}
