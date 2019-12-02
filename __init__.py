@@ -84,7 +84,7 @@ class FBXGEE_PT_panel(Panel):
         export_dir_box.label(text="Export Folder:")
         export_dir_col = export_dir_box.column(align=True)
 
-        if export_mode == 'OBJECT':
+        if (export_mode == 'OBJECT' and active_object):
             dir_name = path.basename(
                 path.normpath(active_object.FBXGEE_dir_path))
 
@@ -163,7 +163,7 @@ class FBXGEE_PT_panel(Panel):
         obj_box.label(text="Objects to Export:")
         obj_col = obj_box.column(align=True)
 
-        if export_mode == 'OBJECT':
+        if (export_mode == 'OBJECT' and active_object):
             for obj in selected_objects:
                 obj_row = obj_col.row(align=True)
                 type_icon = 'OUTLINER_OB_' + obj.type

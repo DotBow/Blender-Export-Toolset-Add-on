@@ -46,6 +46,7 @@ class FBXGEE_OT_export_single(Operator):
     def poll(cls, context):
         if context.window_manager.FBXGEE_export_mode == 'OBJECT':
             return (len(context.selected_objects) > 0 and
+                    context.active_object and
                     context.active_object.FBXGEE_dir_path != "")
         else:
             return context.collection.FBXGEE_dir_path != ""
@@ -149,6 +150,7 @@ class FBXGEE_OT_sync_dir_path(Operator):
     @classmethod
     def poll(cls, context):
         return (len(context.selected_objects) > 1 and
+                context.active_object and
                 context.active_object.FBXGEE_dir_path)
 
     def execute(self, context):
@@ -168,7 +170,8 @@ class FBXGEE_OT_export_linked_data(Operator):
 
     @classmethod
     def poll(cls, context):
-        return (context.active_object.FBXGEE_dir_path and
+        return (context.active_object and
+                context.active_object.FBXGEE_dir_path and
                 len(context.selected_objects) > 0)
 
     def execute(self, context):
