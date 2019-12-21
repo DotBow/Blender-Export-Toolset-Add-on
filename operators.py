@@ -74,8 +74,11 @@ class FBXGEE_OT_export_single(Operator):
                     rots.append(ob.rotation_euler.copy())
                     ob.rotation_euler.zero()
 
+            export_preset = active_object.FBXGEE_export_preset
+            export_format = active_object.FBXGEE_export_format.lower()
+
             result = fbx_export(
-                engine, self.export_type, dir_path, file_name)
+                dir_path, file_name, export_preset, export_format)
 
             if scene.FBXGEE_reset_pos is True:
                 scene.cursor.location = c_loс

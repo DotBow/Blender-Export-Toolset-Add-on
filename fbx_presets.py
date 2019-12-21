@@ -20,85 +20,109 @@
 
 
 from os import path
+from pathlib import Path
 
 import bpy
 
 
-def fbx_export(engine, export_type, dir_path, file_name):
-    export_path = path.join(dir_path, file_name) + ".fbx"
-    export_mode = bpy.context.window_manager.FBXGEE_export_mode
-    use_collection = True if export_mode == 'COLLECTION' else False
-    selection = not use_collection
+def fbx_export(dir_path, file_name, export_preset, export_format):
+    filepath = path.join(dir_path, file_name) + "." + export_format
 
-    if engine == "UNITY":
-        # UNITY Static Mesh
-        if export_type == "STATIC":
-            bpy.ops.export_scene.fbx(
-                filepath=export_path,
-                use_selection=selection,
-                use_active_collection=use_collection,
-                apply_scale_options='FBX_SCALE_ALL',
-                bake_space_transform=True,
-                object_types={'MESH', 'OTHER'},
-                bake_anim=False)
+    if filepath:
+        class Container(object):
+            __slots__ = ('__dict__',)
 
-            return "Export Finished"
-        # UNITY Skeletal Mesh
-        elif export_type == "SKELETAL":
-            return "Not supported yet"
-        elif export_type == "ANIMATION":
-            return "Not supported yet"
-    elif engine == "UE4":
-        # UE4 Static Mesh
-        if export_type == "STATIC":
-            bpy.ops.export_scene.fbx(
-                filepath=export_path,
-                use_selection=selection,
-                use_active_collection=use_collection,
-                axis_up='Z',
-                object_types={'MESH', 'OTHER'},
-                mesh_smooth_type='FACE',
-                bake_anim=False)
+        op = Container()
+        file = open(export_preset, 'r')
 
-            return "Export Finished"
-        # UE4 Skeletal Mesh
-        elif export_type == "SKELETAL":
-            bpy.ops.export_scene.fbx(
-                filepath=export_path,
-                use_selection=selection,
-                use_active_collection=use_collection,
-                axis_up='Z',
-                object_types={'ARMATURE', 'MESH', 'OTHER'},
-                mesh_smooth_type='FACE',
-                add_leaf_bones=False,
-                bake_anim=False)
+        # storing the values from the preset on the class
+        for line in file.readlines()[3::]:
+            exec(line, globals(), locals())
 
-            return "Export Finished"
-        # UE4 Animation
-        elif export_type == "ANIMATION":
-            bpy.ops.export_scene.fbx(
-                filepath=export_path,
-                use_selection=selection,
-                axis_up='Z',
-                object_types={'ARMATURE', 'MESH', 'OTHER'},
-                mesh_smooth_type='FACE',
-                add_leaf_bones=False,
-                bake_anim_simplify_factor=0)
+        # change preset parameters
+        op.filepath = filepath
+        # pass class dictionary to the operator
+        kwargs = op.__dict__
 
-            return "Export Finished"
-    elif engine == "MAYA":
-        # MAYA Static Mesh
-        if export_type == "STATIC":
-            bpy.ops.export_scene.fbx(
-                filepath=export_path,
-                use_selection=selection,
-                use_active_collection=use_collection,
-                object_types={'MESH', 'OTHER'},
-                bake_anim=False)
+        if export_format == "fbx":
+            bpy.ops.export_scene.fbx(**kwargs)
+        if export_format == "obj":
+            bpy.ops.export_scene.obj(**kwargs)
 
-            return "Export Finished"
-        # MAYA Skeletal Mesh
-        elif export_type == "SKELETAL":
-            return "Not supported yet"
-        elif export_type == "ANIMATION":
-            return "Not supported yet"
+    return "True"
+    # export_mode = bpy.context.window_manager.FBXGEE_export_mode
+    # use_collection = True if export_mode == 'COLLECTION' else False
+    # selection = not use_collection
+
+    # if engine == "UNITY":
+    #     # UNITY Static Mesh
+    #     if export_type == "STATIC":
+    #         bpy.ops.export_scene.fbx(
+    #             filepath=export_path,
+    #             use_selection=selection,
+    #             use_active_collection=use_collection,
+    #             apply_scale_options='FBX_SCALE_ALL',
+    #             bake_space_transform=True,
+    #             object_types={'MESH', 'OTHER'},
+    #             bake_anim=False)
+
+    #         return "Export Finished"
+    #     # UNITY Skeletal Mesh
+    #     elif export_type == "SKELETAL":
+    #         return "Not supported yet"
+    #     elif export_type == "ANIMATION":
+    #         return "Not supported yet"
+    # elif engine == "UE4":
+    #     # UE4 Static Mesh
+    #     if export_type == "STATIC":
+    #         bpy.ops.export_scene.fbx(
+    #             filepath=export_path,
+    #             use_selection=selection,
+    #             use_active_collection=use_collection,
+    #             axis_up='Z',
+    #             object_types={'MESH', 'OTHER'},
+    #             mesh_smooth_type='FACE',
+    #             bake_anim=False)
+
+    #         return "Export Finished"
+    #     # UE4 Skeletal Mesh
+    #     elif export_type == "SKELETAL":
+    #         bpy.ops.export_scene.fbx(
+    #             filepath=export_path,
+    #             use_selection=selection,
+    #             use_active_collection=use_collection,
+    #             axis_up='Z',
+    #             object_types={'ARMATURE', 'MESH', 'OTHER'},
+    #             mesh_smooth_type='FACE',
+    #             add_leaf_bones=False,
+    #             bake_anim=False)
+
+    #         return "Export Finished"
+    #     # UE4 Animation
+    #     elif export_type == "ANIMATION":
+    #         bpy.ops.export_scene.fbx(
+    #             filepath=export_path,
+    #             use_selection=selection,
+    #             axis_up='Z',
+    #             object_types={'ARMATURE', 'MESH', 'OTHER'},
+    #             mesh_smooth_type='FACE',
+    #             add_leaf_bones=False,
+    #             bake_anim_simplify_factor=0)
+
+    #         return "Export Finished"
+    # elif engine == "MAYA":
+    #     # MAYA Static Mesh
+    #     if export_type == "STATIC":
+    #         bpy.ops.export_scene.fbx(
+    #             filepath=export_path,
+    #             use_selection=selection,
+    #             use_active_collection=use_collection,
+    #             object_types={'MESH', 'OTHER'},
+    #             bake_anim=False)
+
+    #         return "Export Finished"
+    #     # MAYA Skeletal Mesh
+    #     elif export_type == "SKELETAL":
+    #         return "Not supported yet"
+    #     elif export_type == "ANIMATION":
+    #         return "Not supported yet"

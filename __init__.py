@@ -18,6 +18,7 @@
 
 # <pep8 compliant>
 
+from pathlib import Path
 from copy import copy, deepcopy
 from math import pi
 from os import path
@@ -60,6 +61,9 @@ class FBXGEE_PT_panel(Panel):
         active_object = context.active_object
         selected_objects = context.selected_objects
         active_collection = context.collection
+
+        layout.row().prop(active_object, "FBXGEE_export_format", expand=True)
+        layout.prop(active_object, "FBXGEE_export_preset", text="")
 
         layout.prop(scene, "FBXGEE_engine", text="")
 
@@ -121,23 +125,10 @@ class FBXGEE_PT_panel(Panel):
 
         if export_mode == 'OBJECT':
             export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
-                                        text="Export Single Static",
                                         icon='EXPORT').export_type = 'STATIC'
-            export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
-                                        text="Export Single Skeletal",
-                                        icon='EXPORT').export_type = 'SKELETAL'
             export_buttons_col.separator()
             export_buttons_col.operator(FBXGEE_OT_export_batch.bl_idname,
-                                        text="Export Batch Static",
                                         icon='EXPORT').export_type = 'STATIC'
-            export_buttons_col.operator(FBXGEE_OT_export_batch.bl_idname,
-                                        text="Export Batch Skeletal",
-                                        icon='EXPORT').export_type = 'SKELETAL'
-            export_buttons_col.separator()
-            export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
-                                        text="Export Animation",
-                                        icon='EXPORT').export_type = 'ANIMATION'
-            export_buttons_col.separator()
             export_buttons_col.operator(
                 FBXGEE_OT_export_linked_data.bl_idname, icon='EXPORT')
         elif export_mode == 'COLLECTION':
@@ -272,6 +263,22 @@ def collect_recent_folders(dummy):
         recent_folder = (dir_path, dir_name, '')
         recent_folders.append(recent_folder)
 
+# NEW
+def get_export_presets(self, context):
+    export_format = context.active_object.FBXGEE_export_format.lower()
+    export_presets = []
+
+    dir = Path(__file__).parent.absolute()
+    preset_path = dir / "presets" / export_format
+    paths = list(Path(preset_path).rglob('*.py'))
+
+    for path in paths:
+        p = Path(path)
+        icon = icon_get('unity')
+        export_presets.append((p.as_posix(), p.stem, "", icon))
+
+    return export_presets
+# NEW
 
 def register():
     register_icons()
@@ -289,6 +296,19 @@ def register():
         ("OBJECT", "Object", "", 1),
         ("COLLECTION", "Collection", "", 2),
     ]
+
+# NEW
+    export_formats = [
+        ("FBX", "FBX", "", 1),
+        ("OBJ", "OBJ", "", 2),
+    ]
+
+    bpy.types.Object.FBXGEE_export_format = EnumProperty(
+        name="Export Format", items=export_formats)
+
+    bpy.types.Object.FBXGEE_export_preset = EnumProperty(
+        name="Export Preset", items=get_export_presets)
+# NEW
 
     bpy.types.WindowManager.FBXGEE_export_mode = EnumProperty(
         name="Export Mode", items=export_modes)

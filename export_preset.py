@@ -1,7 +1,12 @@
+from pathlib import Path
 import bpy
 
-def export_fbx(preset):
-    filename = preset
+
+def export_fbx(preset_name):
+    dir = Path(__file__).parent.absolute()
+    preset_path = dir / "presets" / "fbx" / preset_name
+
+    filename = preset_name
     print(filename)
     preset_path = "D:\\"
     print(preset_path)
