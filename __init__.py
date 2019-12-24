@@ -25,8 +25,8 @@ from os import path
 
 import bpy
 from bpy.app.handlers import persistent
-from bpy.props import BoolProperty, EnumProperty, StringProperty
-from bpy.types import Panel
+from bpy.props import BoolProperty, EnumProperty, StringProperty, PointerProperty
+from bpy.types import Panel, PropertyGroup
 from bpy.utils import register_class, unregister_class
 
 from .icons import *
@@ -62,14 +62,20 @@ class FBXGEE_PT_panel(Panel):
         selected_objects = context.selected_objects
         active_collection = context.collection
 
-        layout.row().prop(active_object, "FBXGEE_export_format", expand=True)
-        layout.prop(active_object, "FBXGEE_export_preset", text="")
-
-        layout.prop(scene, "FBXGEE_engine", text="")
-
         export_mode_box = layout.box()
         export_mode_box.label(text="Export Mode:")
         export_mode_box.row().prop(wm, "FBXGEE_export_mode", expand=True)
+
+        if wm.FBXGEE_export_mode == "OBJECT":
+            export_properties = active_object.export_properties
+        elif wm.FBXGEE_export_mode == "COLLECTION":
+            export_properties = active_collection.export_properties
+
+        box = layout.box()
+        box.label(text="Export Preset:")
+        col = box.column(align=True)
+        col.row(align=True).prop(export_properties, "format", expand=True)
+        col.prop(export_properties, "preset", text="")
 
         if not selected_objects and export_mode == 'OBJECT':
             layout.separator()
@@ -264,33 +270,37 @@ def collect_recent_folders(dummy):
         recent_folders.append(recent_folder)
 
 # NEW
-def get_export_presets(self, context):
-    export_format = context.active_object.FBXGEE_export_format.lower()
-    export_presets = []
 
-    dir = Path(__file__).parent.absolute()
-    preset_path = dir / "presets" / export_format
-    paths = list(Path(preset_path).rglob('*.py'))
 
-    for path in paths:
-        p = Path(path)
-        icon = icon_get('unity')
-        export_presets.append((p.as_posix(), p.stem, "", icon))
+class ExportProperties(PropertyGroup):
+    def get_export_presets(self, context):
+        export_format = context.active_object.export_properties.format.lower()
+        export_presets = []
 
-    return export_presets
+        dir = Path(__file__).parent.absolute()
+        preset_path = dir / "presets" / export_format
+        paths = list(Path(preset_path).rglob('*.py'))
+
+        for path in paths:
+            p = Path(path)
+            icon = icon_get('unity')
+            export_presets.append((p.as_posix(), p.stem, "", icon))
+
+        return export_presets
+
+    export_formats = [
+        ("FBX", "FBX", "", 1),
+        ("OBJ", "OBJ", "", 2),
+    ]
+
+    format: EnumProperty(name="Export Format", items=export_formats)
+    preset: EnumProperty(name="Export Preset", items=get_export_presets)
+
+
 # NEW
 
 def register():
     register_icons()
-
-    engines = [
-        ("UNITY", "Unity", "", icon_get('unity'), 1),
-        ("UE4", "Unreal Engine 4", "", icon_get('ue4'), 2),
-        ("MAYA", "Maya", "", icon_get('maya'), 3),
-    ]
-
-    bpy.types.Scene.FBXGEE_engine = EnumProperty(
-        name="Game Engine", items=engines)
 
     export_modes = [
         ("OBJECT", "Object", "", 1),
@@ -298,16 +308,10 @@ def register():
     ]
 
 # NEW
-    export_formats = [
-        ("FBX", "FBX", "", 1),
-        ("OBJ", "OBJ", "", 2),
-    ]
-
-    bpy.types.Object.FBXGEE_export_format = EnumProperty(
-        name="Export Format", items=export_formats)
-
-    bpy.types.Object.FBXGEE_export_preset = EnumProperty(
-        name="Export Preset", items=get_export_presets)
+    bpy.utils.register_class(ExportProperties)
+    bpy.types.Object.export_properties = PointerProperty(type=ExportProperties)
+    bpy.types.Collection.export_properties = PointerProperty(
+        type=ExportProperties)
 # NEW
 
     bpy.types.WindowManager.FBXGEE_export_mode = EnumProperty(

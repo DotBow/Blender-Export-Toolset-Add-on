@@ -34,14 +34,6 @@ class FBXGEE_OT_export_single(Operator):
     bl_idname = "object.fbxgee_ot_single_export"
     bl_label = "Export Single"
 
-    export_type_items = [
-        ("STATIC", "Static Mesh", "", 1),
-        ("SKELETAL", "Skeletal Mesh", "", 2),
-        ("ANIMATION", "Animation", "", 3),
-    ]
-
-    export_type: EnumProperty(items=export_type_items)
-
     @classmethod
     def poll(cls, context):
         if context.window_manager.FBXGEE_export_mode == 'OBJECT':
@@ -52,7 +44,6 @@ class FBXGEE_OT_export_single(Operator):
             return context.collection.FBXGEE_dir_path != ""
 
     def execute(self, context):
-        engine = context.scene.FBXGEE_engine
         active_object = context.active_object
         export_mode = context.window_manager.FBXGEE_export_mode
 
@@ -74,8 +65,8 @@ class FBXGEE_OT_export_single(Operator):
                     rots.append(ob.rotation_euler.copy())
                     ob.rotation_euler.zero()
 
-            export_preset = active_object.FBXGEE_export_preset
-            export_format = active_object.FBXGEE_export_format.lower()
+            export_preset = active_object.export_properties.preset
+            export_format = active_object.export_properties.format.lower()
 
             result = fbx_export(
                 dir_path, file_name, export_preset, export_format)
