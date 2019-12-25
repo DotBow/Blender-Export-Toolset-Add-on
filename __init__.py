@@ -18,14 +18,15 @@
 
 # <pep8 compliant>
 
-from pathlib import Path
 from copy import copy, deepcopy
 from math import pi
 from os import path
+from pathlib import Path
 
 import bpy
 from bpy.app.handlers import persistent
-from bpy.props import BoolProperty, EnumProperty, StringProperty, PointerProperty
+from bpy.props import (BoolProperty, EnumProperty, PointerProperty,
+                       StringProperty)
 from bpy.types import Panel, PropertyGroup
 from bpy.utils import register_class, unregister_class
 
@@ -56,20 +57,17 @@ class FBXGEE_PT_panel(Panel):
         layout = self.layout
         scene = context.scene
         wm = context.window_manager
-        export_mode = wm.FBXGEE_export_mode
 
         active_object = context.active_object
         selected_objects = context.selected_objects
         active_collection = context.collection
 
-        export_mode_box = layout.box()
-        export_mode_box.label(text="Export Mode:")
-        export_mode_box.row().prop(wm, "FBXGEE_export_mode", expand=True)
-
-        if wm.FBXGEE_export_mode == "OBJECT":
-            export_properties = active_object.export_properties
-        elif wm.FBXGEE_export_mode == "COLLECTION":
+        if len(selected_objects) == 0:
             export_properties = active_collection.export_properties
+            export_mode = "COLLECTION"
+        elif active_collection:
+            export_properties = active_object.export_properties
+            export_mode = "OBJECT"
 
         box = layout.box()
         box.label(text="Export Preset:")
@@ -90,70 +88,50 @@ class FBXGEE_PT_panel(Panel):
         settings_box_col.prop(scene, "FBXGEE_reset_rot")
 
         # Active Export Directory
-        export_dir_box = layout.box()
-        export_dir_box.label(text="Export Folder:")
-        export_dir_col = export_dir_box.column(align=True)
+        box = layout.box()
+        box.label(text="Export Folder:")
+        col = box.column(align=True)
 
-        if (export_mode == 'OBJECT' and active_object):
-            dir_name = path.basename(
-                path.normpath(active_object.FBXGEE_dir_path))
+        dir_name = path.basename(path.normpath(
+            export_properties.directory))
 
-            if dir_name == '.':
-                export_dir_col.alert = True
+        if dir_name == '.':
+            col.alert = True
 
-            export_dir_col.prop(active_object, "FBXGEE_dir_path", text="")
-        elif export_mode == 'COLLECTION':
-            dir_name = path.basename(path.normpath(
-                active_collection.FBXGEE_dir_path))
-
-            if dir_name == '.':
-                export_dir_col.alert = True
-
-            export_dir_col.prop(active_collection, "FBXGEE_dir_path", text="")
+        col.prop(export_properties, "directory", text="")
 
         if len(recent_folders) > 0:
             try:
-                if export_mode == 'OBJECT':
-                    wm.FBXGEE_recent_folders = active_object.FBXGEE_dir_path
-                elif export_mode == 'COLLECTION':
-                    wm.FBXGEE_recent_folders = active_collection.FBXGEE_dir_path
+                wm.FBXGEE_recent_folders = export_properties.directory
             except:
                 pass
 
-            export_dir_row = export_dir_col.row(align=True)
-            export_dir_row.prop(wm, "FBXGEE_recent_folders", text="")
-            export_dir_row.operator(
-                FBXGEE_OT_sync_dir_path.bl_idname, text="", icon='FILE_REFRESH')
+            row = col.row(align=True)
+            row.prop(wm, "FBXGEE_recent_folders", text="")
+            row.operator(FBXGEE_OT_sync_dir_path.bl_idname,
+                         text="", icon='FILE_REFRESH')
 
         # Export Buttons
-        export_buttons_col = layout.column(align=True)
-        export_buttons_col.scale_y = 1.4
+        col = layout.column()
+        col.scale_y = 1.4
 
         if export_mode == 'OBJECT':
-            export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
-                                        icon='EXPORT').export_type = 'STATIC'
-            export_buttons_col.separator()
-            export_buttons_col.operator(FBXGEE_OT_export_batch.bl_idname,
-                                        icon='EXPORT').export_type = 'STATIC'
-            export_buttons_col.operator(
+            col.operator(FBXGEE_OT_export_single.bl_idname, icon='EXPORT')
+            col.operator(FBXGEE_OT_export_batch.bl_idname, icon='EXPORT')
+            col.operator(
                 FBXGEE_OT_export_linked_data.bl_idname, icon='EXPORT')
         elif export_mode == 'COLLECTION':
-            export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
-                                        text="Export Single Static",
-                                        icon='EXPORT').export_type = 'STATIC'
-            export_buttons_col.operator(FBXGEE_OT_export_single.bl_idname,
-                                        text="Export Single Skeletal",
-                                        icon='EXPORT').export_type = 'SKELETAL'
+            col.operator(FBXGEE_OT_export_single.bl_idname, icon='EXPORT')
 
             # Show Active Collection
-            collection_box = layout.box()
-            collection_box.label(text="Collection to Export:")
+            box = layout.box()
+            box.label(text="Collection to Export:")
 
-            if not active_collection.FBXGEE_dir_path:
-                collection_box.alert = True
+            if not export_properties.directory:
+                box.alert = True
 
-            collection_box.prop(active_collection, "name",
-                                text="", icon='GROUP')
+            box.prop(active_collection, "name",
+                     text="", icon='GROUP')
 
         # Show Selected Objects
         obj_box = layout.box()
@@ -165,7 +143,7 @@ class FBXGEE_PT_panel(Panel):
                 obj_row = obj_col.row(align=True)
                 type_icon = 'OUTLINER_OB_' + obj.type
 
-                if not obj.FBXGEE_dir_path:
+                if not obj.export_properties.directory:
                     obj_row.alert = True
 
                 obj_row.prop(obj, "name", text="", icon=type_icon)
@@ -179,33 +157,6 @@ class FBXGEE_PT_panel(Panel):
                 obj_row.prop(obj, "name", text="", icon=type_icon)
 
 
-def update_dir_path(self, context):
-    dir_path = self["FBXGEE_dir_path"]
-
-    if dir_path:
-        dir_name = path.basename(path.normpath(dir_path))
-        recent_folder = (dir_path, dir_name, '')
-
-        if recent_folder not in recent_folders:
-            recent_folders.append(recent_folder)
-
-        wm = context.window_manager
-
-        if wm.FBXGEE_recent_folders != dir_path:
-            wm.FBXGEE_recent_folders = dir_path
-
-
-def get_dir_path(self):
-    try:
-        return self["FBXGEE_dir_path"]
-    except:
-        return ""
-
-
-def set_dir_path(self, value):
-    self["FBXGEE_dir_path"] = path.abspath(bpy.path.abspath(value))
-
-
 def get_recent_folders(self, context):
     return recent_folders
 
@@ -213,21 +164,18 @@ def get_recent_folders(self, context):
 def update_recent_folder(self, context):
     obj_active = context.active_object
     active_collection = context.collection
+    selected_objects = context.selected_objects
 
-    export_mode = context.window_manager.FBXGEE_export_mode
+    if len(selected_objects) == 0:
+        export_properties = active_collection.export_properties
+    elif active_collection:
+        export_properties = obj_active.export_properties
 
-    if (obj_active and export_mode == 'OBJECT'):
-        wm = context.window_manager
-        new_dir_path = wm.FBXGEE_recent_folders
+    wm = context.window_manager
+    new_dir_path = wm.FBXGEE_recent_folders
 
-        if obj_active.FBXGEE_dir_path != new_dir_path:
-            obj_active.FBXGEE_dir_path = new_dir_path
-    elif (active_collection and export_mode == 'COLLECTION'):
-        wm = context.window_manager
-        new_dir_path = wm.FBXGEE_recent_folders
-
-        if active_collection.FBXGEE_dir_path != new_dir_path:
-            active_collection.FBXGEE_dir_path = new_dir_path
+    if export_properties.directory != new_dir_path:
+        export_properties.directory = new_dir_path
 
 
 recent_folders = []
@@ -251,13 +199,13 @@ def collect_recent_folders(dummy):
     folders = []
 
     for obj in objects:
-        dir_path = obj.FBXGEE_dir_path
+        dir_path = obj.export_properties.directory
 
         if dir_path:
             folders.append(dir_path)
 
     for collection in collections:
-        dir_path = collection.FBXGEE_dir_path
+        dir_path = collection.export_properties.directory
 
         if dir_path:
             folders.append(dir_path)
@@ -273,6 +221,30 @@ def collect_recent_folders(dummy):
 
 
 class ExportProperties(PropertyGroup):
+    def update_directory(self, context):
+        dir_path = self["directory"]
+
+        if dir_path:
+            dir_name = path.basename(path.normpath(dir_path))
+            recent_folder = (dir_path, dir_name, '')
+
+            if recent_folder not in recent_folders:
+                recent_folders.append(recent_folder)
+
+            wm = context.window_manager
+
+            if wm.FBXGEE_recent_folders != dir_path:
+                wm.FBXGEE_recent_folders = dir_path
+
+    def get_directory(self):
+        try:
+            return self["directory"]
+        except:
+            return ""
+
+    def set_directory(self, value):
+        self["directory"] = path.abspath(bpy.path.abspath(value))
+
     def get_export_presets(self, context):
         export_format = context.active_object.export_properties.format.lower()
         export_presets = []
@@ -295,17 +267,14 @@ class ExportProperties(PropertyGroup):
 
     format: EnumProperty(name="Export Format", items=export_formats)
     preset: EnumProperty(name="Export Preset", items=get_export_presets)
+    directory = StringProperty(name="Export Path", default="", subtype='DIR_PATH',
+                               update=update_directory, get=get_directory, set=set_directory)
 
 
 # NEW
 
 def register():
     register_icons()
-
-    export_modes = [
-        ("OBJECT", "Object", "", 1),
-        ("COLLECTION", "Collection", "", 2),
-    ]
 
 # NEW
     bpy.utils.register_class(ExportProperties)
@@ -314,24 +283,10 @@ def register():
         type=ExportProperties)
 # NEW
 
-    bpy.types.WindowManager.FBXGEE_export_mode = EnumProperty(
-        name="Export Mode", items=export_modes)
     bpy.types.WindowManager.FBXGEE_recent_folders = EnumProperty(
         name="Recent Folders",
         items=get_recent_folders,
         update=update_recent_folder)
-    bpy.types.Object.FBXGEE_dir_path = StringProperty(
-        name="Export Directory",
-        default="",
-        subtype='DIR_PATH',
-        update=update_dir_path,
-        get=get_dir_path, set=set_dir_path)
-    bpy.types.Collection.FBXGEE_dir_path = StringProperty(
-        name="Collection Export Directory",
-        default="",
-        subtype='DIR_PATH',
-        update=update_dir_path,
-        get=get_dir_path, set=set_dir_path)
 
     bpy.types.Scene.FBXGEE_reset_pos = BoolProperty(
         name="Reset Position", description="Set object position to (0, 0, 0)", default=False)

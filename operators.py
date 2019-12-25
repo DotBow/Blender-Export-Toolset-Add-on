@@ -36,19 +36,25 @@ class FBXGEE_OT_export_single(Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.window_manager.FBXGEE_export_mode == 'OBJECT':
-            return (len(context.selected_objects) > 0 and
-                    context.active_object and
-                    context.active_object.FBXGEE_dir_path != "")
-        else:
-            return context.collection.FBXGEE_dir_path != ""
+        selected_objects = context.selected_objects
+        active_collection = context.collection
+        active_object = context.active_object
+
+        if len(selected_objects) == 0:
+            export_properties = active_collection.export_properties
+        elif active_collection:
+            export_properties = active_object.export_properties
+
+        return (len(context.selected_objects) > 0 and
+                context.active_object and
+                export_properties.directory != "")
 
     def execute(self, context):
         active_object = context.active_object
         export_mode = context.window_manager.FBXGEE_export_mode
 
         file_name = active_object.name if export_mode == 'OBJECT' else context.collection.name
-        dir_path = active_object.FBXGEE_dir_path if export_mode == 'OBJECT' else context.collection.FBXGEE_dir_path
+        dir_path = active_object.export_properties.directory if export_mode == 'OBJECT' else context.collection.export_properties.directory
 
         if path.exists(dir_path):
             scene = context.scene
@@ -106,7 +112,7 @@ class FBXGEE_OT_export_batch(Operator):
 
         if (len(selected_objects) > 1):
             for obj in selected_objects:
-                if obj.FBXGEE_dir_path == "":
+                if obj.export_properties.directory == "":
                     return False
 
             return True
@@ -120,7 +126,7 @@ class FBXGEE_OT_export_batch(Operator):
         for obj in selected_objects:
             bpy.ops.object.select_all(action='DESELECT')
             obj.select_set(True)
-            dir_path = obj.FBXGEE_dir_path
+            dir_path = obj.export_properties.directory
 
             if path.exists(dir_path):
                 result = fbx_export(
@@ -145,14 +151,14 @@ class FBXGEE_OT_sync_dir_path(Operator):
     def poll(cls, context):
         return (len(context.selected_objects) > 1 and
                 context.active_object and
-                context.active_object.FBXGEE_dir_path)
+                context.active_object.export_properties.directory)
 
     def execute(self, context):
         active_object = context.active_object
 
-        if active_object.FBXGEE_dir_path:
+        if active_object.export_properties.directory:
             for obj in context.selected_objects:
-                obj.FBXGEE_dir_path = active_object.FBXGEE_dir_path
+                obj.export_properties.directory = active_object.export_properties.directory
 
         return {'FINISHED'}
 
@@ -165,7 +171,7 @@ class FBXGEE_OT_export_linked_data(Operator):
     @classmethod
     def poll(cls, context):
         return (context.active_object and
-                context.active_object.FBXGEE_dir_path and
+                context.active_object.export_properties.directory and
                 len(context.selected_objects) > 0)
 
     def execute(self, context):
@@ -174,7 +180,7 @@ class FBXGEE_OT_export_linked_data(Operator):
 
         active_object = context.active_object
         name = active_object.name.rsplit('.', 1)[0]
-        file_path = path.join(active_object.FBXGEE_dir_path,
+        file_path = path.join(active_object.export_properties.directory,
                               name + ".json")
 
         # Clear file
