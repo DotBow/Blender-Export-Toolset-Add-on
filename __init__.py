@@ -81,11 +81,11 @@ class FBXGEE_PT_panel(Panel):
             layout.separator()
             return
 
-        settings_box = layout.box()
-        settings_box.label(text="Settings:")
-        settings_box_col = settings_box.column(align=True)
-        settings_box_col.prop(scene, "FBXGEE_reset_pos")
-        settings_box_col.prop(scene, "FBXGEE_reset_rot")
+        box = layout.box()
+        box.label(text="Settings:")
+        col = box.column(align=True)
+        col.prop(scene, "FBXGEE_reset_pos")
+        col.prop(scene, "FBXGEE_reset_rot")
 
         # Active Export Directory
         box = layout.box()
@@ -134,27 +134,27 @@ class FBXGEE_PT_panel(Panel):
                      text="", icon='GROUP')
 
         # Show Selected Objects
-        obj_box = layout.box()
-        obj_box.label(text="Objects to Export:")
-        obj_col = obj_box.column(align=True)
+        box = layout.box()
+        box.label(text="Objects to Export:")
+        col = box.column(align=True)
 
         if (export_mode == 'OBJECT' and active_object):
             for obj in selected_objects:
-                obj_row = obj_col.row(align=True)
+                row = col.row(align=True)
                 type_icon = 'OUTLINER_OB_' + obj.type
 
                 if not obj.export_properties.directory:
-                    obj_row.alert = True
+                    row.alert = True
 
-                obj_row.prop(obj, "name", text="", icon=type_icon)
+                row.prop(obj, "name", text="", icon=type_icon)
 
                 if obj.name == active_object.name:
-                    obj_row.label(icon='LAYER_ACTIVE')
+                    row.label(icon='LAYER_ACTIVE')
         elif export_mode == 'COLLECTION':
             for obj in active_collection.objects:
-                obj_row = obj_col.row(align=True)
+                row = col.row(align=True)
                 type_icon = 'OUTLINER_OB_' + obj.type
-                obj_row.prop(obj, "name", text="", icon=type_icon)
+                row.prop(obj, "name", text="", icon=type_icon)
 
 
 def get_recent_folders(self, context):

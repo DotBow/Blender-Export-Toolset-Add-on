@@ -25,8 +25,8 @@ from pathlib import Path
 import bpy
 
 
-def fbx_export(dir_path, file_name, export_preset, export_format):
-    filepath = path.join(dir_path, file_name) + "." + export_format
+def fbx_export(directory, file_name, export_preset, export_format):
+    filepath = path.join(directory, file_name) + "." + export_format
 
     if filepath:
         class Container(object):

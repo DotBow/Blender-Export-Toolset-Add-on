@@ -50,13 +50,21 @@ class FBXGEE_OT_export_single(Operator):
                 export_properties.directory != "")
 
     def execute(self, context):
+        selected_objects = context.selected_objects
+        active_collection = context.collection
         active_object = context.active_object
-        export_mode = context.window_manager.FBXGEE_export_mode
 
-        file_name = active_object.name if export_mode == 'OBJECT' else context.collection.name
-        dir_path = active_object.export_properties.directory if export_mode == 'OBJECT' else context.collection.export_properties.directory
+        if len(selected_objects) == 0:
+            export_properties = active_collection.export_properties
+            export_mode = 'COLLECTION'
+        elif active_collection:
+            export_properties = active_object.export_properties
+            export_mode = 'OBJECT'
 
-        if path.exists(dir_path):
+        file_name = active_object.name if export_mode == 'OBJECT' else active_collection.name
+        directory = export_properties.directory
+
+        if path.exists(directory):
             scene = context.scene
 
             if scene.FBXGEE_reset_pos is True:
@@ -71,11 +79,11 @@ class FBXGEE_OT_export_single(Operator):
                     rots.append(ob.rotation_euler.copy())
                     ob.rotation_euler.zero()
 
-            export_preset = active_object.export_properties.preset
-            export_format = active_object.export_properties.format.lower()
+            export_preset = export_properties.preset
+            export_format = export_properties.format.lower()
 
             result = fbx_export(
-                dir_path, file_name, export_preset, export_format)
+                directory, file_name, export_preset, export_format)
 
             if scene.FBXGEE_reset_pos is True:
                 scene.cursor.location = c_loс
