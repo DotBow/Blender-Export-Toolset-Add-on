@@ -65,7 +65,7 @@ class FBXGEE_PT_panel(Panel):
         if len(selected_objects) == 0:
             export_properties = active_collection.export_properties
             export_mode = "COLLECTION"
-        elif active_collection:
+        elif active_object:
             export_properties = active_object.export_properties
             export_mode = "OBJECT"
 
@@ -73,7 +73,11 @@ class FBXGEE_PT_panel(Panel):
         box.label(text="Export Preset:")
         col = box.column(align=True)
         col.row(align=True).prop(export_properties, "format", expand=True)
-        col.prop(export_properties, "preset", text="")
+
+        if export_properties.format == "FBX":
+            col.prop(export_properties, "fbx_preset", text="")
+        elif export_properties.format == "OBJ":
+            col.prop(export_properties, "obj_preset", text="")
 
         if not selected_objects and export_mode == 'OBJECT':
             layout.separator()
@@ -246,7 +250,16 @@ class ExportProperties(PropertyGroup):
         self["directory"] = path.abspath(bpy.path.abspath(value))
 
     def get_export_presets(self, context):
-        export_format = context.active_object.export_properties.format.lower()
+        active_object = context.active_object
+        selected_objects = context.selected_objects
+        active_collection = context.collection
+
+        if len(selected_objects) == 0:
+            export_properties = active_collection.export_properties
+        elif active_collection:
+            export_properties = active_object.export_properties
+
+        export_format = export_properties.format.lower()
         export_presets = []
 
         dir = Path(__file__).parent.absolute()
@@ -255,8 +268,8 @@ class ExportProperties(PropertyGroup):
 
         for path in paths:
             p = Path(path)
-            icon = icon_get('unity')
-            export_presets.append((p.as_posix(), p.stem, "", icon))
+            name = p.stem
+            export_presets.append((name, name, ""))
 
         return export_presets
 
@@ -266,7 +279,8 @@ class ExportProperties(PropertyGroup):
     ]
 
     format: EnumProperty(name="Export Format", items=export_formats)
-    preset: EnumProperty(name="Export Preset", items=get_export_presets)
+    fbx_preset: EnumProperty(name="FBX Export Preset", items=get_export_presets)
+    obj_preset: EnumProperty(name="OBJ Export Preset", items=get_export_presets)
     directory = StringProperty(name="Export Path", default="", subtype='DIR_PATH',
                                update=update_directory, get=get_directory, set=set_directory)
 

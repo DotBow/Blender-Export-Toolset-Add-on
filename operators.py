@@ -39,14 +39,14 @@ class FBXGEE_OT_export_single(Operator):
         selected_objects = context.selected_objects
         active_collection = context.collection
         active_object = context.active_object
+        export_properties = None
 
         if len(selected_objects) == 0:
             export_properties = active_collection.export_properties
-        elif active_collection:
+        elif active_object:
             export_properties = active_object.export_properties
 
-        return (len(context.selected_objects) > 0 and
-                context.active_object and
+        return (export_properties and
                 export_properties.directory != "")
 
     def execute(self, context):
@@ -79,11 +79,17 @@ class FBXGEE_OT_export_single(Operator):
                     rots.append(ob.rotation_euler.copy())
                     ob.rotation_euler.zero()
 
-            export_preset = export_properties.preset
             export_format = export_properties.format.lower()
 
+            if export_format == "fbx":
+                export_preset = export_properties.fbx_preset
+            elif export_format == "obj":
+                export_preset = export_properties.obj_preset
+
+            use_collection = False if export_mode == 'OBJECT' else True
+
             result = fbx_export(
-                directory, file_name, export_preset, export_format)
+                directory, file_name, export_preset, export_format, use_collection)
 
             if scene.FBXGEE_reset_pos is True:
                 scene.cursor.location = c_loс

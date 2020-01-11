@@ -25,22 +25,25 @@ from pathlib import Path
 import bpy
 
 
-def fbx_export(directory, file_name, export_preset, export_format):
-    filepath = path.join(directory, file_name) + "." + export_format
+def fbx_export(directory, file_name, export_preset, export_format, use_collection):
+    filepath = Path(directory) / (file_name + "." + export_format)
 
     if filepath:
         class Container(object):
             __slots__ = ('__dict__',)
 
         op = Container()
-        file = open(export_preset, 'r')
+        dir = Path(__file__).parent.absolute()
+        preset_path = dir / "presets" / export_format / (export_preset + ".py")
+        file = open(preset_path, 'r')
 
         # storing the values from the preset on the class
         for line in file.readlines()[3::]:
             exec(line, globals(), locals())
 
         # change preset parameters
-        op.filepath = filepath
+        op.filepath = filepath.as_posix()
+        op.use_active_collection = use_collection
         # pass class dictionary to the operator
         kwargs = op.__dict__
 
