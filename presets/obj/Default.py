@@ -2,11 +2,11 @@ import bpy
 op = bpy.context.active_operator
 
 op.filepath = ''
-op.use_selection = True
+op.use_selection = False
 op.use_animation = False
 op.use_mesh_modifiers = True
 op.use_edges = True
-op.use_smooth_groups = True
+op.use_smooth_groups = False
 op.use_smooth_groups_bitflags = False
 op.use_normals = True
 op.use_uvs = True

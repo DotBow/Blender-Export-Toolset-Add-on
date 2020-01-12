@@ -1,15 +1,15 @@
 import bpy
 op = bpy.context.active_operator
 
-op.filepath = 'C:\\Users\\Oleg\\Documents\\untitled.fbx'
-op.use_selection = False
+op.filepath = ''
+op.use_selection = True
 op.use_active_collection = False
 op.global_scale = 1.0
 op.apply_unit_scale = True
-op.apply_scale_options = 'FBX_SCALE_ALL'
-op.bake_space_transform = True
-op.object_types = {'OTHER', 'MESH'}
-op.use_mesh_modifiers = True
+op.apply_scale_options = 'FBX_SCALE_NONE'
+op.bake_space_transform = False
+op.object_types = {'MESH', 'OTHER'}
+op.use_mesh_modifiers = False
 op.use_mesh_modifiers_render = True
 op.mesh_smooth_type = 'OFF'
 op.use_subsurf = False

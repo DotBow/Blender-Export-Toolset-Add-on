@@ -221,8 +221,6 @@ def collect_recent_folders(dummy):
         recent_folder = (dir_path, dir_name, '')
         recent_folders.append(recent_folder)
 
-# NEW
-
 
 class ExportProperties(PropertyGroup):
     def update_directory(self, context):
@@ -279,23 +277,21 @@ class ExportProperties(PropertyGroup):
     ]
 
     format: EnumProperty(name="Export Format", items=export_formats)
-    fbx_preset: EnumProperty(name="FBX Export Preset", items=get_export_presets)
-    obj_preset: EnumProperty(name="OBJ Export Preset", items=get_export_presets)
+    fbx_preset: EnumProperty(name="FBX Export Preset",
+                             items=get_export_presets)
+    obj_preset: EnumProperty(name="OBJ Export Preset",
+                             items=get_export_presets)
     directory = StringProperty(name="Export Path", default="", subtype='DIR_PATH',
                                update=update_directory, get=get_directory, set=set_directory)
 
 
-# NEW
-
 def register():
     register_icons()
 
-# NEW
     bpy.utils.register_class(ExportProperties)
     bpy.types.Object.export_properties = PointerProperty(type=ExportProperties)
     bpy.types.Collection.export_properties = PointerProperty(
         type=ExportProperties)
-# NEW
 
     bpy.types.WindowManager.FBXGEE_recent_folders = EnumProperty(
         name="Recent Folders",
