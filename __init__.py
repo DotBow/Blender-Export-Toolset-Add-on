@@ -281,8 +281,8 @@ class ExportProperties(PropertyGroup):
                              items=get_export_presets)
     obj_preset: EnumProperty(name="OBJ Export Preset",
                              items=get_export_presets)
-    directory = StringProperty(name="Export Path", default="", subtype='DIR_PATH',
-                               update=update_directory, get=get_directory, set=set_directory)
+    directory: StringProperty(name="Export Path", default="", subtype='DIR_PATH',
+                              update=update_directory, get=get_directory, set=set_directory)
 
 
 def register():
