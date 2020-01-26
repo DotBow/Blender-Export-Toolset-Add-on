@@ -26,7 +26,7 @@ import bpy
 from bpy.props import EnumProperty
 from bpy.types import Operator
 
-from .export_preset import *
+from .export_preset import export_scene
 
 
 class FBXGEE_OT_export_single(Operator):
@@ -88,8 +88,12 @@ class FBXGEE_OT_export_single(Operator):
 
             use_collection = False if export_mode == 'OBJECT' else True
 
-            result = export_preset(
-                directory, file_name, export_preset, export_format, use_collection)
+            if use_collection:
+                for ob in active_collection.objects:
+                    ob.select_set(True)
+
+            result = export_scene(
+                directory, file_name, export_preset, export_format)
 
             if scene.FBXGEE_reset_pos is True:
                 scene.cursor.location = c_loс

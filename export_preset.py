@@ -25,7 +25,7 @@ from pathlib import Path
 import bpy
 
 
-def export_preset(directory, file_name, export_preset, export_format, use_collection):
+def export_scene(directory, file_name, export_preset, export_format):
     filepath = Path(directory) / (file_name + "." + export_format)
 
     if filepath:
@@ -43,13 +43,14 @@ def export_preset(directory, file_name, export_preset, export_format, use_collec
 
         # change preset parameters
         op.filepath = filepath.as_posix()
-        op.use_active_collection = use_collection
-        # pass class dictionary to the operator
-        kwargs = op.__dict__
+        op.use_selection = True
 
         if export_format == "fbx":
+            op.use_active_collection = False
+            kwargs = op.__dict__
             bpy.ops.export_scene.fbx(**kwargs)
         if export_format == "obj":
+            kwargs = op.__dict__
             bpy.ops.export_scene.obj(**kwargs)
 
     return "True"
