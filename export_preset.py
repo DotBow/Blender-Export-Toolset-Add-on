@@ -25,7 +25,7 @@ from pathlib import Path
 import bpy
 
 
-def fbx_export(directory, file_name, export_preset, export_format, use_collection):
+def export_preset(directory, file_name, export_preset, export_format, use_collection):
     filepath = Path(directory) / (file_name + "." + export_format)
 
     if filepath:
