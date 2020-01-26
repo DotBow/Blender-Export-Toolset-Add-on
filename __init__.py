@@ -312,6 +312,8 @@ def unregister():
     for cls in classes:
         unregister_class(cls)
 
+    unregister_class(ExportProperties)
+
     bpy.app.handlers.load_post.remove(collect_recent_folders)
 
 
