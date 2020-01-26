@@ -30,7 +30,6 @@ from bpy.props import (BoolProperty, EnumProperty, PointerProperty,
 from bpy.types import Panel, PropertyGroup
 from bpy.utils import register_class, unregister_class
 
-from .icons import *
 from .operators import *
 
 bl_info = {
@@ -286,8 +285,6 @@ class ExportProperties(PropertyGroup):
 
 
 def register():
-    register_icons()
-
     bpy.utils.register_class(ExportProperties)
     bpy.types.Object.export_properties = PointerProperty(type=ExportProperties)
     bpy.types.Collection.export_properties = PointerProperty(
@@ -315,7 +312,6 @@ def unregister():
         unregister_class(cls)
 
     bpy.app.handlers.load_post.remove(collect_recent_folders)
-    unregister_icons()
 
 
 if __name__ == "__main__":
