@@ -18,8 +18,6 @@
 
 # <pep8 compliant>
 
-from copy import copy, deepcopy
-from math import pi
 from os import path
 from pathlib import Path
 
@@ -33,7 +31,7 @@ from bpy.utils import register_class, unregister_class
 from .operators import *
 
 bl_info = {
-    "name": "FBX Game Engine Export",
+    "name": "Export Toolset",
     "description": "FBX format export for Unity and Unreal Engine 4",
     "author": "Oleg Stepanov",
     "version": (1, 0, 0),
@@ -49,8 +47,8 @@ bl_info = {
 class FBXGEE_PT_panel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
-    bl_label = "FBX Game Export"
-    bl_category = "FBX Game Export"
+    bl_label = "Export Toolset"
+    bl_category = "Export Toolset"
 
     def draw(self, context):
         layout = self.layout
@@ -67,6 +65,9 @@ class FBXGEE_PT_panel(Panel):
         elif active_object:
             export_properties = active_object.export_properties
             export_mode = "OBJECT"
+        else:
+            layout.label(text="No Active Object or\n Collection Selected", icon="ERROR")
+            return
 
         box = layout.box()
         box.label(text="Export Preset:")
