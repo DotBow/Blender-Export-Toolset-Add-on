@@ -53,4 +53,4 @@ def export_scene(directory, file_name, export_preset, export_format):
             kwargs = op.__dict__
             bpy.ops.export_scene.obj(**kwargs)
 
-    return "True"
+    return "Export Finished"
