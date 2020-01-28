@@ -95,6 +95,9 @@ class FBXGEE_OT_export_single(Operator):
             result = export_scene(
                 directory, file_name, export_preset, export_format)
 
+            if use_collection:
+                bpy.ops.object.select_all(action='DESELECT')
+
             if scene.FBXGEE_reset_pos is True:
                 scene.cursor.location = c_loс
                 bpy.ops.view3d.snap_selected_to_cursor(use_offset=True)
