@@ -32,7 +32,7 @@ from .operators import *
 
 bl_info = {
     "name": "Export Toolset",
-    "description": "FBX format export for Unity and Unreal Engine 4",
+    "description": "Set of tools for fast FBX and OBJ export",
     "author": "Oleg Stepanov",
     "version": (1, 0, 0),
     "blender": (2, 80, 0),
@@ -44,7 +44,7 @@ bl_info = {
 }
 
 
-class FBXGEE_PT_panel(Panel):
+class ET_PT_panel(Panel):
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_label = "Export Toolset"
@@ -66,7 +66,8 @@ class FBXGEE_PT_panel(Panel):
             export_properties = active_object.export_properties
             export_mode = "OBJECT"
         else:
-            layout.label(text="No Active Object or\n Collection Selected", icon="ERROR")
+            layout.label(
+                text="No Active Object or\n Collection Selected", icon="ERROR")
             return
 
         box = layout.box()
@@ -88,8 +89,8 @@ class FBXGEE_PT_panel(Panel):
         box = layout.box()
         box.label(text="Settings:")
         col = box.column(align=True)
-        col.prop(scene, "FBXGEE_reset_pos")
-        col.prop(scene, "FBXGEE_reset_rot")
+        col.prop(scene, "ET_reset_pos")
+        col.prop(scene, "ET_reset_rot")
 
         # Active Export Directory
         box = layout.box()
@@ -106,13 +107,13 @@ class FBXGEE_PT_panel(Panel):
 
         if len(recent_folders) > 0:
             try:
-                wm.FBXGEE_recent_folders = export_properties.directory
+                wm.ET_recent_folders = export_properties.directory
             except:
                 pass
 
             row = col.row(align=True)
-            row.prop(wm, "FBXGEE_recent_folders", text="")
-            row.operator(FBXGEE_OT_sync_dir_path.bl_idname,
+            row.prop(wm, "ET_recent_folders", text="")
+            row.operator(ET_OT_sync_dir_path.bl_idname,
                          text="", icon='FILE_REFRESH')
 
         # Export Buttons
@@ -120,12 +121,12 @@ class FBXGEE_PT_panel(Panel):
         col.scale_y = 1.4
 
         if export_mode == 'OBJECT':
-            col.operator(FBXGEE_OT_export_single.bl_idname, icon='EXPORT')
-            col.operator(FBXGEE_OT_export_batch.bl_idname, icon='EXPORT')
+            col.operator(ET_OT_export_single.bl_idname, icon='EXPORT')
+            col.operator(ET_OT_export_batch.bl_idname, icon='EXPORT')
             col.operator(
-                FBXGEE_OT_export_linked_data.bl_idname, icon='EXPORT')
+                ET_OT_export_linked_data.bl_idname, icon='EXPORT')
         elif export_mode == 'COLLECTION':
-            col.operator(FBXGEE_OT_export_single.bl_idname, icon='EXPORT')
+            col.operator(ET_OT_export_single.bl_idname, icon='EXPORT')
 
             # Show Active Collection
             box = layout.box()
@@ -176,7 +177,7 @@ def update_recent_folder(self, context):
         export_properties = obj_active.export_properties
 
     wm = context.window_manager
-    new_dir_path = wm.FBXGEE_recent_folders
+    new_dir_path = wm.ET_recent_folders
 
     if export_properties.directory != new_dir_path:
         export_properties.directory = new_dir_path
@@ -186,11 +187,11 @@ recent_folders = []
 
 
 classes = (
-    FBXGEE_PT_panel,
-    FBXGEE_OT_export_single,
-    FBXGEE_OT_export_batch,
-    FBXGEE_OT_sync_dir_path,
-    FBXGEE_OT_export_linked_data,
+    ET_PT_panel,
+    ET_OT_export_single,
+    ET_OT_export_batch,
+    ET_OT_sync_dir_path,
+    ET_OT_export_linked_data,
 )
 
 
@@ -235,8 +236,8 @@ class ExportProperties(PropertyGroup):
 
             wm = context.window_manager
 
-            if wm.FBXGEE_recent_folders != dir_path:
-                wm.FBXGEE_recent_folders = dir_path
+            if wm.ET_recent_folders != dir_path:
+                wm.ET_recent_folders = dir_path
 
     def get_directory(self):
         try:
@@ -291,15 +292,15 @@ def register():
     bpy.types.Collection.export_properties = PointerProperty(
         type=ExportProperties)
 
-    bpy.types.WindowManager.FBXGEE_recent_folders = EnumProperty(
+    bpy.types.WindowManager.ET_recent_folders = EnumProperty(
         name="Recent Folders",
         items=get_recent_folders,
         update=update_recent_folder)
 
-    bpy.types.Scene.FBXGEE_reset_pos = BoolProperty(
+    bpy.types.Scene.ET_reset_pos = BoolProperty(
         name="Reset Position", description="Set object position to (0, 0, 0)", default=False)
 
-    bpy.types.Scene.FBXGEE_reset_rot = BoolProperty(
+    bpy.types.Scene.ET_reset_rot = BoolProperty(
         name="Reset Rotation", description="Set object rotation to (0, 0, 0)", default=False)
 
     for cls in classes:

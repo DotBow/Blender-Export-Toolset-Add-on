@@ -29,9 +29,9 @@ from bpy.types import Operator
 from .export_preset import export_scene
 
 
-class FBXGEE_OT_export_single(Operator):
+class ET_OT_export_single(Operator):
     """Export selected objects in a single file"""
-    bl_idname = "object.fbxgee_ot_single_export"
+    bl_idname = "object.ET_ot_single_export"
     bl_label = "Export Single"
 
     @classmethod
@@ -67,13 +67,13 @@ class FBXGEE_OT_export_single(Operator):
         if path.exists(directory):
             scene = context.scene
 
-            if scene.FBXGEE_reset_pos is True:
+            if scene.ET_reset_pos is True:
                 bpy.ops.view3d.snap_cursor_to_selected()
                 c_loс = scene.cursor.location.copy()
                 bpy.ops.view3d.snap_cursor_to_center()
                 bpy.ops.view3d.snap_selected_to_cursor(use_offset=True)
 
-            if scene.FBXGEE_reset_rot is True:
+            if scene.ET_reset_rot is True:
                 rots = []
                 for ob in context.selected_objects:
                     rots.append(ob.rotation_euler.copy())
@@ -90,6 +90,7 @@ class FBXGEE_OT_export_single(Operator):
 
             if use_collection:
                 for ob in active_collection.objects:
+                    ob.hide_set(False)
                     ob.select_set(True)
 
             result = export_scene(
@@ -98,11 +99,11 @@ class FBXGEE_OT_export_single(Operator):
             if use_collection:
                 bpy.ops.object.select_all(action='DESELECT')
 
-            if scene.FBXGEE_reset_pos is True:
+            if scene.ET_reset_pos is True:
                 scene.cursor.location = c_loс
                 bpy.ops.view3d.snap_selected_to_cursor(use_offset=True)
 
-            if scene.FBXGEE_reset_rot is True:
+            if scene.ET_reset_rot is True:
                 i = 0
                 for ob in context.selected_objects:
                     ob.rotation_euler = rots[i]
@@ -115,9 +116,9 @@ class FBXGEE_OT_export_single(Operator):
             return {'FINISHED'}
 
 
-class FBXGEE_OT_export_batch(Operator):
+class ET_OT_export_batch(Operator):
     """Export each selected object in a separate file"""
-    bl_idname = "object.fbxgee_ot_export_batch"
+    bl_idname = "object.ET_ot_export_batch"
     bl_label = "Export Batch"
 
     export_type_items = [
@@ -142,7 +143,7 @@ class FBXGEE_OT_export_batch(Operator):
 
     def execute(self, context):
         selected_objects = context.selected_objects
-        engine = context.scene.FBXGEE_engine
+        engine = context.scene.ET_engine
 
         for obj in selected_objects:
             bpy.ops.object.select_all(action='DESELECT')
@@ -163,9 +164,9 @@ class FBXGEE_OT_export_batch(Operator):
         return {'FINISHED'}
 
 
-class FBXGEE_OT_sync_dir_path(Operator):
+class ET_OT_sync_dir_path(Operator):
     """Set active directory to each selected object"""
-    bl_idname = "object.fbxgee_ot_sync_dir_path"
+    bl_idname = "object.ET_ot_sync_dir_path"
     bl_label = "Synchronize Directories"
 
     @classmethod
@@ -184,9 +185,9 @@ class FBXGEE_OT_sync_dir_path(Operator):
         return {'FINISHED'}
 
 
-class FBXGEE_OT_export_linked_data(Operator):
+class ET_OT_export_linked_data(Operator):
     """ Export transformation data for each linked object into JSON file """
-    bl_idname = "object.fbxgee_ot_export_linked_data"
+    bl_idname = "object.ET_ot_export_linked_data"
     bl_label = "Export Linked Data"
 
     @classmethod
