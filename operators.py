@@ -31,7 +31,7 @@ from .export_preset import export_scene
 
 class ET_OT_export_single(Operator):
     """Export selected objects in a single file"""
-    bl_idname = "object.ET_ot_single_export"
+    bl_idname = "export_toolset.single_export"
     bl_label = "Export Single"
 
     @classmethod
@@ -89,9 +89,10 @@ class ET_OT_export_single(Operator):
             use_collection = False if export_mode == 'OBJECT' else True
 
             if use_collection:
-                for ob in active_collection.objects:
-                    ob.hide_set(False)
-                    ob.select_set(True)
+                self.select_objects(active_collection)
+                # for ob in active_collection.objects:
+                #     ob.hide_set(False)
+                #     ob.select_set(True)
 
             result = export_scene(
                 directory, file_name, export_preset, export_format)
@@ -115,10 +116,32 @@ class ET_OT_export_single(Operator):
             self.report({'ERROR'}, "Export Path Doesn't Exist!")
             return {'FINISHED'}
 
+    def select_objects(self, collection):
+        self.set_collection_exclude(collection, False)
+        collection.hide_select = False
+        collection.hide_viewport = False
+
+        for ob in collection.objects:
+            ob.hide_select = False
+            ob.hide_set(False)
+            ob.hide_viewport = False
+            ob.select_set(True)
+
+        for col in collection.children:
+            self.select_objects(col)
+
+    def set_collection_exclude(self, collection, is_exclude):
+        children = bpy.context.view_layer.layer_collection.children
+
+        for layer_collection in children:
+            if layer_collection.collection == collection:
+                layer_collection.exclude = is_exclude
+                layer_collection.hide_viewport = is_exclude
+
 
 class ET_OT_export_batch(Operator):
     """Export each selected object in a separate file"""
-    bl_idname = "object.ET_ot_export_batch"
+    bl_idname = "export_toolset.export_batch"
     bl_label = "Export Batch"
 
     export_type_items = [
@@ -166,7 +189,7 @@ class ET_OT_export_batch(Operator):
 
 class ET_OT_sync_dir_path(Operator):
     """Set active directory to each selected object"""
-    bl_idname = "object.ET_ot_sync_dir_path"
+    bl_idname = "export_toolset.sync_dir_path"
     bl_label = "Synchronize Directories"
 
     @classmethod
@@ -187,7 +210,7 @@ class ET_OT_sync_dir_path(Operator):
 
 class ET_OT_export_linked_data(Operator):
     """ Export transformation data for each linked object into JSON file """
-    bl_idname = "object.ET_ot_export_linked_data"
+    bl_idname = "export_toolset.export_linked_data"
     bl_label = "Export Linked Data"
 
     @classmethod
