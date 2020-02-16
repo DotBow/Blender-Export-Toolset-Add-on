@@ -186,15 +186,6 @@ def update_recent_folder(self, context):
 recent_folders = []
 
 
-classes = (
-    ET_PT_panel,
-    ET_OT_export_single,
-    ET_OT_export_batch,
-    ET_OT_sync_dir_path,
-    ET_OT_export_linked_data,
-)
-
-
 @persistent
 def collect_recent_folders(dummy):
     recent_folders.clear()
@@ -286,8 +277,20 @@ class ExportProperties(PropertyGroup):
                               update=update_directory, get=get_directory, set=set_directory)
 
 
+classes = (
+    ET_PT_panel,
+    ET_OT_export_single,
+    ET_OT_export_batch,
+    ET_OT_sync_dir_path,
+    ET_OT_export_linked_data,
+    ExportProperties,
+)
+
+
 def register():
-    bpy.utils.register_class(ExportProperties)
+    for cls in classes:
+        register_class(cls)
+
     bpy.types.Object.export_properties = PointerProperty(type=ExportProperties)
     bpy.types.Collection.export_properties = PointerProperty(
         type=ExportProperties)
@@ -303,17 +306,12 @@ def register():
     bpy.types.Scene.ET_reset_rot = BoolProperty(
         name="Reset Rotation", description="Set object rotation to (0, 0, 0)", default=False)
 
-    for cls in classes:
-        register_class(cls)
-
     bpy.app.handlers.load_post.append(collect_recent_folders)
 
 
 def unregister():
     for cls in classes:
         unregister_class(cls)
-
-    unregister_class(ExportProperties)
 
     bpy.app.handlers.load_post.remove(collect_recent_folders)
 
