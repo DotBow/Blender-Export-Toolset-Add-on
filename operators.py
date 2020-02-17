@@ -90,9 +90,6 @@ class ET_OT_export_single(Operator):
 
             if use_collection:
                 self.select_objects(active_collection)
-                # for ob in active_collection.objects:
-                #     ob.hide_set(False)
-                #     ob.select_set(True)
 
             result = export_scene(
                 directory, file_name, export_preset, export_format)
@@ -117,7 +114,12 @@ class ET_OT_export_single(Operator):
             return {'FINISHED'}
 
     def select_objects(self, collection):
-        self.set_collection_exclude(collection, False)
+        layer_collection = self.get_view_layer_collection(
+            bpy.context.view_layer.layer_collection, collection)
+
+        layer_collection.exclude = False
+        layer_collection.hide_viewport = False
+
         collection.hide_select = False
         collection.hide_viewport = False
 
@@ -130,13 +132,16 @@ class ET_OT_export_single(Operator):
         for col in collection.children:
             self.select_objects(col)
 
-    def set_collection_exclude(self, collection, is_exclude):
-        children = bpy.context.view_layer.layer_collection.children
+    def get_view_layer_collection(self, layer_collection, collection):
+        if layer_collection.collection == collection:
+            return layer_collection
 
-        for layer_collection in children:
-            if layer_collection.collection == collection:
-                layer_collection.exclude = is_exclude
-                layer_collection.hide_viewport = is_exclude
+        for child_layer in layer_collection.children:
+            view_layer_collection = self.get_view_layer_collection(
+                child_layer, collection)
+
+            if view_layer_collection is not None:
+                return view_layer_collection
 
 
 class ET_OT_export_batch(Operator):
