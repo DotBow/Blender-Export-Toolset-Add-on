@@ -25,9 +25,10 @@ import bpy
 from bpy.app.handlers import persistent
 from bpy.props import (BoolProperty, EnumProperty, PointerProperty,
                        StringProperty)
-from bpy.types import Panel, PropertyGroup
+from bpy.types import AddonPreferences, Panel, PropertyGroup
 from bpy.utils import register_class, unregister_class
 
+from .modules.keymap_manager import *
 from .operators import *
 
 bl_info = {
@@ -42,6 +43,14 @@ bl_info = {
     "support": 'COMMUNITY',
     "category": "Import-Export"
 }
+
+
+class ET_AddonPreferences(AddonPreferences):
+    bl_idname = __name__
+
+    def draw(self, context):
+        keys = [('Window', 'export_toolset.single_export', None)]
+        draw_key(self.layout, keys)
 
 
 class ET_PT_panel(Panel):
@@ -278,6 +287,7 @@ class ExportProperties(PropertyGroup):
 
 
 classes = (
+    ET_AddonPreferences,
     ET_PT_panel,
     ET_OT_export_single,
     ET_OT_export_batch,
@@ -307,6 +317,7 @@ def register():
         name="Reset Rotation", description="Set object rotation to (0, 0, 0)", default=False)
 
     bpy.app.handlers.load_post.append(collect_recent_folders)
+    register_keymap()
 
 
 def unregister():
@@ -314,6 +325,7 @@ def unregister():
         unregister_class(cls)
 
     bpy.app.handlers.load_post.remove(collect_recent_folders)
+    unregister_keymap()
 
 
 if __name__ == "__main__":
