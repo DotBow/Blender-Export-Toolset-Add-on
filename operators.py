@@ -30,12 +30,12 @@ from .export_preset import export_scene
 
 
 class ExportObject:
-    def __init__(self, ob, hide_select, hide_set, hide_viewport, select_set):
+    def __init__(self, ob):
         self.ob = ob
-        self.hide_select = hide_select
-        self.hide_set = hide_set
-        self.hide_viewport = hide_viewport
-        self.select_set = select_set
+        self.hide_select = ob.hide_select
+        self.hide_set = ob.hide_get()
+        self.hide_viewport = ob.hide_viewport
+        self.select_set = ob.select_get()
 
     def restore(self):
         self.ob.hide_select = self.hide_select
@@ -153,9 +153,7 @@ class ET_OT_export_single(Operator):
         collection.hide_viewport = False
 
         for ob in collection.objects:
-            export_ob = ExportObject(
-                ob, ob.hide_select, ob.hide_get(),
-                ob.hide_viewport, ob.select_get())
+            export_ob = ExportObject(ob)
             self.export_objects.append(export_ob)
             export_ob.prepare()
 
