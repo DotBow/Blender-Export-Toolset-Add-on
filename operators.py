@@ -29,6 +29,27 @@ from bpy.types import Operator
 from .export_preset import export_scene
 
 
+class ExportObject:
+    def __init__(self, ob, hide_select, hide_set, hide_viewport, select_set):
+        self.ob = ob
+        self.hide_select = hide_select
+        self.hide_set = hide_set
+        self.hide_viewport = hide_viewport
+        self.select_set = select_set
+
+    def restore(self):
+        self.ob.hide_select = self.hide_select
+        self.ob.hide_set(self.hide_set)
+        self.ob.hide_viewport = self.hide_viewport
+        self.ob.select_set(self.select_set)
+
+    def prepare(self):
+        self.ob.hide_select = False
+        self.ob.hide_set(False)
+        self.ob.hide_viewport = False
+        self.ob.select_set(True)
+
+
 class ET_OT_export_single(Operator):
     """Export selected objects in a single file"""
     bl_idname = "export_toolset.single_export"
@@ -88,11 +109,19 @@ class ET_OT_export_single(Operator):
 
             use_collection = False if export_mode == 'OBJECT' else True
 
+            # Select all objects inside collections
+            self.export_objects = []
+
             if use_collection:
                 self.select_objects(active_collection)
 
+            # Export
             result = export_scene(
                 directory, file_name, export_preset, export_format)
+
+            # Restore objects restrictions
+            for ob in self.export_objects:
+                ob.restore()
 
             if use_collection:
                 bpy.ops.object.select_all(action='DESELECT')
@@ -124,10 +153,11 @@ class ET_OT_export_single(Operator):
         collection.hide_viewport = False
 
         for ob in collection.objects:
-            ob.hide_select = False
-            ob.hide_set(False)
-            ob.hide_viewport = False
-            ob.select_set(True)
+            export_ob = ExportObject(
+                ob, ob.hide_select, ob.hide_get(),
+                ob.hide_viewport, ob.select_get())
+            self.export_objects.append(export_ob)
+            export_ob.prepare()
 
         for col in collection.children:
             self.select_objects(col)
