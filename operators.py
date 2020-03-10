@@ -71,6 +71,9 @@ class ET_OT_export_single(Operator):
                 export_properties.directory != "")
 
     def execute(self, context):
+        if context.mode != 'OBJECT':
+            bpy.ops.object.mode_set(mode='OBJECT')
+
         selected_objects = context.selected_objects
         active_collection = context.collection
         active_object = context.active_object
