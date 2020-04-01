@@ -50,6 +50,40 @@ class ExportObject:
         self.ob.select_set(True)
 
 
+class ExportCollection:
+    def __init__(self, col):
+        self.col = col
+        self.layer_collection = self.get_view_layer_collection(
+            bpy.context.view_layer.layer_collection, self.col)
+        self.l_exclude = self.layer_collection.exclude
+        self.l_hide_viewport = self.layer_collection.hide_viewport
+        self.hide_select = self.col.hide_select
+        self.hide_viewport = self.col.hide_viewport
+
+    def restore(self):
+        self.layer_collection.exclude = self.l_exclude
+        self.layer_collection.hide_viewport = self.l_hide_viewport
+        self.col.hide_select = self.hide_select
+        self.col.hide_viewport = self.hide_viewport
+
+    def prepare(self):
+        self.layer_collection.exclude = False
+        self.layer_collection.hide_viewport = False
+        self.col.hide_select = False
+        self.col.hide_viewport = False
+
+    def get_view_layer_collection(self, layer_collection, collection):
+        if layer_collection.collection == collection:
+            return layer_collection
+
+        for child_layer in layer_collection.children:
+            view_layer_collection = self.get_view_layer_collection(
+                child_layer, collection)
+
+            if view_layer_collection is not None:
+                return view_layer_collection
+
+
 class ET_OT_export_single(Operator):
     """Export selected objects in a single file"""
     bl_idname = "export_toolset.single_export"
@@ -114,6 +148,7 @@ class ET_OT_export_single(Operator):
 
             # Select all objects inside collections
             self.export_objects = []
+            self.export_cols = []
 
             if use_collection:
                 self.select_objects(active_collection)
@@ -126,8 +161,8 @@ class ET_OT_export_single(Operator):
             for ob in self.export_objects:
                 ob.restore()
 
-            if use_collection:
-                bpy.ops.object.select_all(action='DESELECT')
+            for col in self.export_cols:
+                col.restore()
 
             if scene.ET_reset_pos is True:
                 scene.cursor.location = c_loс
@@ -146,14 +181,9 @@ class ET_OT_export_single(Operator):
             return {'FINISHED'}
 
     def select_objects(self, collection):
-        layer_collection = self.get_view_layer_collection(
-            bpy.context.view_layer.layer_collection, collection)
-
-        layer_collection.exclude = False
-        layer_collection.hide_viewport = False
-
-        collection.hide_select = False
-        collection.hide_viewport = False
+        export_col = ExportCollection(collection)
+        self.export_cols.append(export_col)
+        export_col.prepare()
 
         for ob in collection.objects:
             export_ob = ExportObject(ob)
@@ -162,17 +192,6 @@ class ET_OT_export_single(Operator):
 
         for col in collection.children:
             self.select_objects(col)
-
-    def get_view_layer_collection(self, layer_collection, collection):
-        if layer_collection.collection == collection:
-            return layer_collection
-
-        for child_layer in layer_collection.children:
-            view_layer_collection = self.get_view_layer_collection(
-                child_layer, collection)
-
-            if view_layer_collection is not None:
-                return view_layer_collection
 
 
 class ET_OT_export_batch(Operator):
