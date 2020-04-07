@@ -183,6 +183,10 @@ class ET_OT_export_single(Operator):
     def select_objects(self, collection):
         export_col = ExportCollection(collection)
         self.export_cols.append(export_col)
+
+        for col in collection.children:
+            self.select_objects(col)
+
         export_col.prepare()
 
         for ob in collection.objects:
@@ -190,8 +194,6 @@ class ET_OT_export_single(Operator):
             self.export_objects.append(export_ob)
             export_ob.prepare()
 
-        for col in collection.children:
-            self.select_objects(col)
 
 
 class ET_OT_export_batch(Operator):
