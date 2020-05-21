@@ -195,18 +195,10 @@ class ET_OT_export_single(Operator):
             export_ob.prepare()
 
 
-
 class ET_OT_export_batch(Operator):
     """Export each selected object in a separate file"""
     bl_idname = "export_toolset.export_batch"
     bl_label = "Export Batch"
-
-    export_type_items = [
-        ("STATIC", "Static Mesh", "", 1),
-        ("SKELETAL", "Skeletal Mesh", "", 2),
-    ]
-
-    export_type: EnumProperty(items=export_type_items)
 
     @classmethod
     def poll(cls, context):
@@ -223,16 +215,24 @@ class ET_OT_export_batch(Operator):
 
     def execute(self, context):
         selected_objects = context.selected_objects
-        engine = context.scene.ET_engine
+        bpy.ops.object.select_all(action='DESELECT')
 
         for obj in selected_objects:
-            bpy.ops.object.select_all(action='DESELECT')
             obj.select_set(True)
-            dir_path = obj.export_properties.directory
+            context.view_layer.objects.active = obj
+            export_properties = obj.export_properties
+            directory = export_properties.directory
 
-            if path.exists(dir_path):
-                result = fbx_export(
-                    engine, self.export_type, dir_path, obj.name)
+            if path.exists(directory):
+                export_format = export_properties.format.lower()
+
+                if export_format == "fbx":
+                    export_preset = export_properties.fbx_preset
+                elif export_format == "obj":
+                    export_preset = export_properties.obj_preset
+
+                result = export_scene(
+                    directory, obj.name, export_preset, export_format)
 
                 self.report({'INFO'}, result)
             else:
