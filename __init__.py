@@ -148,11 +148,11 @@ class ET_PT_panel(Panel):
                      text="", icon='GROUP')
 
         # Show Selected Objects
-        box = layout.box()
-        box.label(text="Objects to Export:")
-        col = box.column(align=True)
-
         if (export_mode == 'OBJECT' and active_object):
+            box = layout.box()
+            box.label(text="Objects to Export:")
+            col = box.column(align=True)
+
             for obj in selected_objects:
                 row = col.row(align=True)
                 type_icon = 'OUTLINER_OB_' + obj.type
@@ -165,10 +165,24 @@ class ET_PT_panel(Panel):
                 if obj.name == active_object.name:
                     row.label(icon='LAYER_ACTIVE')
         elif export_mode == 'COLLECTION':
-            for obj in active_collection.objects:
-                row = col.row(align=True)
-                type_icon = 'OUTLINER_OB_' + obj.type
-                row.prop(obj, "name", text="", icon=type_icon)
+
+            if len(active_collection.children) > 0:
+                box = layout.box()
+                box.label(text="Collections to Export:")
+                col = box.column(align=True)
+
+                for collection in active_collection.children:
+                    row = col.row(align=True)
+                    row.prop(collection, "name", text="", icon='GROUP')
+            else:
+                box = layout.box()
+                box.label(text="Objects to Export:")
+                col = box.column(align=True)
+
+                for obj in active_collection.objects:
+                    row = col.row(align=True)
+                    type_icon = 'OUTLINER_OB_' + obj.type
+                    row.prop(obj, "name", text="", icon=type_icon)
 
 
 def get_recent_folders(self, context):
